@@ -70,17 +70,20 @@ df2 = pd.DataFrame({'POLARITY':a})
 #print(df2.head(10))
 #Building the data frame of Polarity in int form
 POLS=[]
-for j in a:    
+for j in df['text']:    
     if TextBlob(str(j)).sentiment.polarity > 0:
         POLS.append(1)
     elif TextBlob(str(j)).sentiment.polarity == 0:
         POLS.append(0)
     else:
         POLS.append(-1)
-    #print(analysis)
+#     #print(analysis)
+
+
     
 
-df3 = pd.DataFrame({'Senti':POLS})   
+df3 = pd.DataFrame({'Senti':POLS})  
+print() 
 
 #1514
 
