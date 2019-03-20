@@ -68,28 +68,25 @@ for i in df['text']:
 #print(a)   
 df2 = pd.DataFrame({'POLARITY':a})
 #print(df2.head(10))
-#Building the data frame of Polarity in int form
+
 POLS=[]
 for j in df['text']:    
     if TextBlob(str(j)).sentiment.polarity > 0:
         POLS.append(1)
-    elif TextBlob(str(j)).sentiment.polarity == 0:
-        POLS.append(0)
+    # elif TextBlob(str(j)).sentiment.polarity == 0:
+    #     POLS.append(0)
     else:
         POLS.append(-1)
-#     #print(analysis)
-
-
+    #print(analysis)
     
-
-df3 = pd.DataFrame({'Senti':POLS})  
-print() 
-
+ 
+df3 = pd.DataFrame({'Senti':POLS})   
+#print(df3.tail(20))
 #1514
 
 Bit_Vals =pd.read_csv("Bit_Values.csv")
 Bit_Vals = Bit_Vals.dropna(axis = 0, how = 'any')
-print(Bit_Vals.info())
+#print(Bit_Vals.info())
 df_time = Bit_Vals["Timestamp"]
 BIT_Volume =Bit_Vals["Volume_(BTC)"]
 BIT_Price = Bit_Vals["Weighted_Price"]
@@ -100,18 +97,31 @@ BIT_Price = Bit_Vals["Weighted_Price"]
 """ DataFrame for Classification Problem """
 
 Class_df = pd.concat([df_time,df2,BIT_Volume,BIT_Price,df3], axis=1 )
-print(Class_df.tail(10))
+#print(Class_df.head(10))
 
 
 Classification_DF = Class_df.dropna(axis = 0, how = 'any')
-print(Classification_DF.tail(10))
+#print(Classification_DF.head(10))
+
+
+# To convert dataframe to csv please UNCOMMENT the below
+#Classification_DF.to_csv(Classification.csv, encoding='utf-8', index=False)
+
+
 
 """ DataFrame for Regression Problem """
-Regress_df = pd.concat([df_time,df2,df3,BIT_Volume,BIT_Price], axis=1 )
+Regress_df = pd.concat([df_time,df2,BIT_Volume,BIT_Price], axis=1 )
 
 
 Regress_DF = Regress_df.dropna(axis = 0, how = 'any')
-print(Regress_DF.tail(10))
+#print(Regress_DF.tail(10))
+
+
+
+# To convert dataframe to csv please UNCOMMENT the below
+#Regress_DF.to_csv(regessor.csv, encoding='utf-8', index=False)
+###############################################################################################
+#Classification
 
 from sklearn.svm import SVC
 from sklearn import metrics   
@@ -119,32 +129,104 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import sklearn.model_selection
+from sklearn import preprocessing, metrics, svm, tree, ensemble
 
+X = Classification_DF.drop(["Senti"], axis =1)
+print(X.head())
+#X_F = X.iloc[:, 0:4].values 
+#print(X_F.head())
+Y = Classification_DF["Senti"]
+#Y = Classification_DF.iloc[:,4].values  
+#print(Y.head())
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state = 0)
 
+pipeline = Pipeline([('scaler', StandardScaler()), ('SVM', SVC())])
 
+pipeline.fit(X_train,y_train)
 
+Predictions = pipeline.predict(X_test)
+
+c_m = metrics.confusion_matrix(y_test, Predictions)
+c_r = metrics.classification_report(y_test, Predictions)
+m_a_e = metrics.mean_absolute_error(y_test,Predictions)
+
+print(c_m,'\n', c_r,'\n', m_a_e)
+print(metrics.accuracy_score(y_test, Predictions))
 
 """ Plotting the Confusion Matrix
        UNCOMMENT TO USE """
 
-# import matplotlib.pyplot as plt 
-# import numpy as np
-# #%matplotlib inline
-# #<<%Matplotlib will not work in normal Sublime environment
-# plt.imshow(c_m, interpolation='nearest', cmap=plt.cm.Wistia)
-# classNames = ['Negative','Neutral','Positive']
-# plt.title('SVM Confusion Matrix - Test Data')
-# plt.ylabel('True label')
-# plt.xlabel('Predicted label')
-# tick_marks = np.arange(len(classNames))
-# plt.xticks(tick_marks, classNames, rotation=45)
-# plt.yticks(tick_marks, classNames)
+import matplotlib.pyplot as plt 
+import numpy as np
+#%matplotlib inline
+#<<%Matplotlib will not work in normal Sublime environment
+plt.imshow(c_m, interpolation='nearest', cmap=plt.cm.Wistia)
+classNames = ['Negative','Neutral','Positive']
+plt.title('SVM Confusion Matrix - Test Data')
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+tick_marks = np.arange(len(classNames))
+plt.xticks(tick_marks, classNames, rotation=45)
+plt.yticks(tick_marks, classNames)
 
 
-# for i in range(3):
-#     for j in range(3):
-#         plt.text(j,i, str(c_m[i][j]))
-# plt.show()          
+for i in range(3):
+    for j in range(3):
+        plt.text(j,i, str(c_m[i][j]))
+plt.show()          
+
+
+################
+"""  K_FOLD for testing the best Classifier"""
+
+
+# KF = sklearn.model_selection.StratifiedKFold( n_splits=10, shuffle=True)
+# KF.get_n_splits(Y,X_F)
+# #print(KF)
+# # Build A function to validate the best classifier
+# def folds(X, Y,Classifier, Kf):
+#   y_pred = Y.copy()
+#   for ii,jj in KF.split(X, Y):
+#       X_train, X_test = X[ii], X[jj]
+#       y_train = Y[ii]
+#       clf = Classifier()
+#       clf.fit(X_train,y_train)
+#       y_pred[jj] = clf.predict(X_test)
+#   return y_pred
+
+# #folds(X, Y,ensemble.GradientBoostingClassifier, KF)
+# # Print The Accuracy results of Different Classifier
+# print(metrics.accuracy_score(Y, folds(X_F, Y, ensemble.GradientBoostingClassifier, KF)))
+# print(metrics.accuracy_score(Y, folds(X_F, Y, ensemble.RandomForestClassifier, KF)))
+# print(metrics.accuracy_score(Y, folds(X_F, Y, SVC, KF)))
+
+#######################################################################################################
+#Regression for Prediction of Bitcoin
+
+"""  INCOMPLETE Neural Network Implementation of Regressio/Prediction Problem """
+
+# from keras.models import Sequential
+# from keras.layers import Dense
+
+# model = Sequential()
+
+# input_layer = Number of Features in Regression DataFrame
+# #Adding Layers to the model
+# model.add(Dense(150, activation='relu', input_shape=(n_cols,)))
+# model.add(Dense(150, activation='relu'))
+# model.add(Dense(150, activation='relu'))
+# model.add(Dense(1))
+
+# #Compile the model Taking Mean_Squared_error as the performance measure
+
+# model.compile(optimizer='adam', loss ='mean_squared_error')
+
+# #Fit/Train the created model
+# model.fit(train_data, test_data, validation=0.2, epochs=, callbacks=[])
+
+
+
+
 
 
 
