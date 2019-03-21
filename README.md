@@ -10,4 +10,6 @@ The Project needs following initials steps to be done:
 1) Create an app in Twitter and get credentials from it like:
 CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_SECRET 
 2) Store this data in the JSON file   
-
+GOAL:
+To achive classifiction of Polarity of Sentiments of public.
+To apply Regression technique to predict the value of BITCOIN.
