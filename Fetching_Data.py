@@ -1,3 +1,4 @@
+#Import all the important Libraries.
 import tweepy
 import json
 import csv
@@ -28,18 +29,15 @@ import textblob
 
 #1510365360
 
-
-
+#Read the Tweets CSV file.
 df = pd.read_csv("Bit_Tweets_Dated.csv", sep=',', 
                    names = ['text'])
 #print(df.head())
 df = pd.DataFrame(df['text'])
-# dff_dates = pd.DataFrame(df['Date'])
-# print(dff_dates.head())
 print(df.head())
-
-
+#Clean out the empty row is any.
 df = df.dropna(axis = 0, how = 'any')
+
 def clean_tweet(data): 
         ''' 
         Utility function to clean tweet text by removing links, special characters 
@@ -48,6 +46,7 @@ def clean_tweet(data):
         return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", data).split())
 
 df['text'] = df['text'].apply(lambda x:x.replace('\n','') )
+df['text'] = df['text'].apply(lambda x:x.replace("b'",''))
 df['text'] = df['text'].apply(clean_tweet)
 print(df.info())
 
@@ -55,9 +54,9 @@ print(df.info())
 # Sentiment Analysis
 from textblob import TextBlob
 def senti_analysis(tweet):
-    
+    """This function will return the Polarity of the sentiments of tweet """
     return TextBlob(tweet).sentiment.polarity
-
+#Create a empty list to store the polarities of the sentiments
 a =[]
 i = 0
 for i in df['text']:
@@ -66,6 +65,7 @@ for i in df['text']:
     a.append(pol)
 
 #print(a)   
+#Convert the above list into a dataframe
 df2 = pd.DataFrame({'POLARITY':a})
 #print(df2.head(10))
 
@@ -82,11 +82,13 @@ for j in df['text']:
  
 df3 = pd.DataFrame({'Senti':POLS})   
 #print(df3.tail(20))
-#1514
+
+#Read the Historical Data of BITCOIN(Downloaded from cable)
 
 Bit_Vals =pd.read_csv("Bit_Values.csv")
+#Drop the empty rows if any.
 Bit_Vals = Bit_Vals.dropna(axis = 0, how = 'any')
-#print(Bit_Vals.info())
+
 df_time = Bit_Vals["Timestamp"]
 BIT_Volume =Bit_Vals["Volume_(BTC)"]
 BIT_Price = Bit_Vals["Weighted_Price"]
@@ -120,6 +122,8 @@ Regress_DF = Regress_df.dropna(axis = 0, how = 'any')
 
 # To convert dataframe to csv please UNCOMMENT the below
 #Regress_DF.to_csv(regessor.csv, encoding='utf-8', index=False)
+
+
 ###############################################################################################
 #Classification
 
