@@ -92,8 +92,8 @@ Bit_Vals =pd.read_csv("Bit_Values.csv")
 print(Bit_Vals.head())
 df_time = Bit_Vals["Timestamp"]
 BIT_Volume =Bit_Vals["Volume_(BTC)"]
-BIT_WtPrice = Bit_Vals["Weighted_Price"]
-BIT_Price = Bit_Vals["Price"]
+BIT_Open_Price = Bit_Vals["Open_Val"]
+BIT_Price = Bit_Vals["Weighted_Price"]
 BIT_Price = BIT_Price.fillna(BIT_Price.mean())
 
 #print(BIT_Price.head(20))
@@ -116,7 +116,8 @@ Classification_DF = Class_df.dropna(axis = 0, how = 'any')
 
 
 """ DataFrame for Regression Problem """
-Regress_df = pd.concat([df_time,df2,BIT_Volume,BIT_WtPrice,BIT_Price], axis=1 )
+Regress_df = pd.concat([df_time,df2,BIT_Volume,BIT_Open_Price,BIT_Price], axis=1 )
+#Regress_df = pd.concat([df_time,df2,BIT_Price], axis=1 )
 
 
 Regress_df = Regress_df.dropna(axis = 0, how = 'any')
@@ -211,9 +212,9 @@ from sklearn import preprocessing, metrics, svm, tree, ensemble
 #######################################################################################################
 #Regression for Prediction of Bitcoin
 
-X_feat = Regress_df.drop(["Price"], axis=1)
+X_feat = Regress_df.drop(["Weighted_Price"], axis=1)
 X_feat = X_feat.values
-Y_targ = Regress_df["Price"].values
+Y_targ = Regress_df["Weighted_Price"].values
 Y_targ = Y_targ.reshape(-1, 1)
 
 # X_feat = Regress_df.iloc[:,0:1]
